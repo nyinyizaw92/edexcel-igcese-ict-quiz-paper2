@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICT Practical Questions Quiz Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-full font-sans transition-colors duration-300 bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 flex flex-col justify-between">
+
+    <!-- Top Navigation Bar -->
+    <header class="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-indigo-600 text-white rounded-xl shadow-md">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg md:text-xl text-slate-800 dark:text-white leading-tight">ICT Quiz Platform</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">IGCSE ICT Practical Revision</p>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center space-x-2">
+                <!-- Category Selector -->
+                <select id="categorySelect" onchange="changeCategory(this.value)" class="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs md:text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                    <option value="ALL">All Categories</option>
+                    <option value="General">General</option>
+                    <option value="File Management">File Management</option>
+                    <option value="Spreadsheet">Spreadsheet</option>
+                    <option value="Word Processing">Word Processing</option>
+                    <option value="Web Authoring">Web Authoring</option>
+                    <option value="Graphics">Graphics</option>
+                    <option value="Database">Database</option>
+                    <option value="Powerpoint">Powerpoint</option>
+                </select>
+
+                <!-- Restart / Shuffle Button -->
+                <button onclick="restartQuiz()" class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition" title="Restart Quiz Session">
+                    <i class="fa-solid fa-rotate-right text-base"></i>
+                </button>
+
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition" title="Toggle Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon text-base"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-6">
+        <div class="w-full max-w-3xl">
+
+            <!-- Stats & Visual Progress Bar (Without total question numbers) -->
+            <div class="mb-4 flex items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-400">
+                <div class="flex items-center space-x-2">
+                    <span class="font-medium">Progress:</span>
+                    <span id="questionStepCounter" class="font-semibold text-indigo-600 dark:text-indigo-400">Question 1</span>
+                </div>
+                <div class="flex-grow max-w-xs bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                    <div id="progressBar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+            </div>
+
+            <!-- Quiz Main Card -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700/60 overflow-hidden transition-all duration-300">
+                
+                <!-- Card Header Tag & Category -->
+                <div class="bg-slate-50 dark:bg-slate-800/90 border-b border-slate-100 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center space-x-2">
+                        <span id="yearBadge" class="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 text-xs font-bold rounded-full">
+                            2021
+                        </span>
+                        <span id="categoryBadge" class="px-3 py-1 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-xs font-medium rounded-full">
+                            Web Authoring
+                        </span>
+                    </div>
+                    <span id="marksBadge" class="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-md border border-amber-200 dark:border-amber-800">
+                        [ 2 Marks ]
+                    </span>
+                </div>
+
+                <!-- Card Body (Question & Answer) -->
+                <div class="p-6 md:p-8 space-y-6">
+
+                    <!-- Question Section -->
+                    <div id="questionSection" class="space-y-4">
+                        <h2 class="text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold">
+                            Question
+                        </h2>
+
+                        <!-- Code Snippet Container (If applicable) -->
+                        <div id="codeSnippetBox" class="hidden bg-slate-900 text-slate-100 p-4 rounded-xl text-sm font-mono border border-slate-700 overflow-x-auto relative">
+                            <span class="absolute top-2 right-2 text-xs text-slate-500">Snippet / Code</span>
+                            <pre><code id="codeSnippet"></code></pre>
+                        </div>
+
+                        <!-- Question Text -->
+                        <div id="questionText" class="text-lg md:text-xl font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
+                            Loading question...
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100 dark:border-slate-700/60">
+
+                    <!-- Action: Show Answer Toggle -->
+                    <div>
+                        <button onclick="toggleAnswer()" id="toggleAnswerBtn" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 rounded-xl font-medium text-sm transition flex items-center justify-center space-x-2 border border-indigo-200 dark:border-indigo-800/60">
+                            <i id="answerIcon" class="fa-solid fa-eye"></i>
+                            <span id="answerBtnText">Show Answer</span>
+                        </button>
+                    </div>
+
+                    <!-- Answer Box (Hidden by default) -->
+                    <div id="answerSection" class="hidden animate-fadeIn space-y-3 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 p-5 rounded-xl">
+                        <div class="flex items-center space-x-2 text-emerald-700 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Marking Scheme / Answer Guide</span>
+                        </div>
+                        <div id="answerText" class="text-slate-700 dark:text-slate-200 text-sm md:text-base whitespace-pre-line leading-relaxed font-sans">
+                            <!-- Answer content inserted via JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Card Footer Controls (Next / Prev) -->
+                <div class="bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
+                    <button onclick="prevQuestion()" id="prevBtn" class="px-4 py-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-xl font-medium text-sm transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-2">
+                        <i class="fa-solid fa-arrow-left text-xs"></i>
+                        <span>Previous</span>
+                    </button>
+
+                    <button onclick="randomNextQuestion()" id="nextBtn" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-indigo-500/20 transition flex items-center space-x-2">
+                        <span>Next Random</span>
+                        <i class="fa-solid fa-shuffle text-xs"></i>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Quick Keyboard Shortcuts Info -->
+            <div class="mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
+                Shortcuts: Press <kbd class="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300">Space</kbd> to reveal answer, <kbd class="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300">→</kbd> for next question.
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="w-full text-center py-3 text-xs text-slate-400 dark:text-slate-600 border-t border-slate-200 dark:border-slate-800">
+        ICT Practical Questions Quiz Platform &copy; 2026
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data Set mapped across all requested 8 categories
+        const questionsDataset = [
+            // --- General ---
+            {
+                id: 101,
+                year: "General ICT",
+                category: "General",
+                question: "Which one of these data types is used to store a photograph?",
+                marks: 1,
+                code: "Options:\nA) Image\nB) Number\nC) Text\nD) Sound",
+                answer: "A) Image"
+            },
+            {
+                id: 102,
+                year: "General ICT",
+                category: "General",
+                question: "Explain one reason why it is important to use white space well when designing a digital product.",
+                marks: 2,
+                code: null,
+                answer: "If there is not enough white space, the information could appear cramped (1) making it difficult to read/navigate (1)."
+            },
+            {
+                id: 103,
+                year: "General ICT",
+                category: "General",
+                question: "State one type of data and describe how it can be turned into information.",
+                marks: 2,
+                code: null,
+                answer: "Number data (1) is turned into information through the creation of graphs or charts / processing into context (1)."
+            },
+            {
+                id: 104,
+                year: "General ICT",
+                category: "General",
+                question: "Explain why using a house style can improve finished products when multiple documents are created for one organization.",
+                marks: 2,
+                code: null,
+                answer: "A house style ensures that documents are consistent (1) which helps to create a recognized brand or corporate identity (1)."
+            },
+            {
+                id: 105,
+                year: "General ICT",
+                category: "General",
+                question: "State what is meant by the term 'serif font' and state one drawback of using serif fonts on low-resolution screens.",
+                marks: 2,
+                code: null,
+                answer: "• Serif font: A typeface that adds a short decorative line/stroke to the ends of letters (1).\n• Drawback: Low-resolution screens may not display the fine serif details clearly, making text harder to read (1)."
+            },
+            {
+                id: 106,
+                year: "General ICT",
+                category: "General",
+                question: "State one accessibility need relating to the use of colour in product designs.",
+                marks: 1,
+                code: null,
+                answer: "Colour-blindness OR partial-sightedness."
+            },
+
+            // --- File Management ---
+            {
+                id: 201,
+                year: "File Mgmt",
+                category: "File Management",
+                question: "Explain why it is important to save work regularly.",
+                marks: 3,
+                code: null,
+                answer: "To prevent data loss if the computer crashes or loses power (1) because until data is saved in secondary storage, it resides in RAM (1) which is volatile memory (1)."
+            },
+            {
+                id: 202,
+                year: "File Mgmt",
+                category: "File Management",
+                question: "State the reason why including version numbers in filenames is useful when developing a digital product.",
+                marks: 1,
+                code: null,
+                answer: "It enables you to track revisions and roll back to previous versions if needed."
+            },
+            {
+                id: 203,
+                year: "File Mgmt",
+                category: "File Management",
+                question: "State three published (non-editable/read-only) file formats.",
+                marks: 3,
+                code: null,
+                answer: ".pdf, .ppsx, .jpeg (or .png / .gif)."
+            },
+            {
+                id: 204,
+                year: "File Mgmt",
+                category: "File Management",
+                question: "State one method used to secure a file from unauthorized access.",
+                marks: 1,
+                code: null,
+                answer: "Add a password / encrypt the file."
+            },
+            {
+                id: 205,
+                year: "File Mgmt",
+                category: "File Management",
+                question: "State the reason why exporting a file is different from saving the file.",
+                marks: 1,
+                code: null,
+                answer: "Exporting saves the file in a different file format that is often compatible with other applications or read-only/published."
+            },
+            {
+                id: 206,
+                year: "2023",
+                category: "File Management",
+                question: "State one reason why it is important to create and manage folder structures.",
+                marks: 1,
+                code: null,
+                answer: "Any one from:\n• Easier to find files/folders\n• Easier for others to locate files\n• Keeps work organized so files aren't all stored in one place"
+            },
+
+            // --- Spreadsheet ---
+            {
+                id: 301,
+                year: "2018",
+                category: "Spreadsheet",
+                question: "Absolute cell references are sometimes used in spreadsheet formulae. Explain, using an example, why an absolute cell reference would be used.",
+                marks: 2,
+                code: "Example formula: =A4 * $C$1",
+                answer: "Absolute referencing locks a specific cell reference (e.g., $C$1) (1) so that when the formula is replicated down a column, the reference stays constant and does not change (1)."
+            },
+            {
+                id: 302,
+                year: "2019",
+                category: "Spreadsheet",
+                question: "Explain one advantage of using named ranges in a spreadsheet.",
+                marks: 2,
+                code: null,
+                answer: "• Range names are human-readable (1) so you don't need to remember exact cell addresses (1)\nOR\n• Absolute referencing is automatic when replicating (1) because named ranges remain constant (1)."
+            },
+            {
+                id: 303,
+                year: "2019",
+                category: "Spreadsheet",
+                question: "Explain one advantage of using lookup tables in a spreadsheet.",
+                marks: 2,
+                code: null,
+                answer: "• Values don't need to be repeated across the worksheet (1), making content easier to manage and update (1)\nOR\n• Data only needs editing at a single point (1), reducing errors and maintaining consistency (1)."
+            },
+            {
+                id: 304,
+                year: "2021",
+                category: "Spreadsheet",
+                question: "Explain one advantage of using the SUM function in a spreadsheet instead of adding individual cells.",
+                marks: 2,
+                code: null,
+                answer: "It speeds up the process and reduces errors (1) because you do not have to key in every individual cell reference (1)."
+            },
+            {
+                id: 305,
+                year: "2022",
+                category: "Spreadsheet",
+                question: "Describe how the function =PRODUCT(A4:C4,2) works.",
+                marks: 2,
+                code: "=PRODUCT(A4:C4, 2)",
+                answer: "It multiplies the values in cells A4, B4, and C4 together (1) and then multiplies the result by 2 (1)."
+            },
+            {
+                id: 306,
+                year: "2021",
+                category: "Spreadsheet",
+                question: "State the purpose of a chart legend in a spreadsheet chart.",
+                marks: 1,
+                code: null,
+                answer: "To identify data series when there is more than one set of data plotted on the chart."
+            },
+
+            // --- Word Processing ---
+            {
+                id: 401,
+                year: "2020",
+                category: "Word Processing",
+                question: "Explain one benefit of using mail merge to create personalized letters for customers.",
+                marks: 2,
+                code: null,
+                answer: "Saves time and reduces errors (1) because the master document is created only once and automatically populated with customer details from a table (1)."
+            },
+            {
+                id: 402,
+                year: "2021",
+                category: "Word Processing",
+                question: "Explain one reason why 'Save As' is used rather than 'Save' when updating a document.",
+                marks: 2,
+                code: null,
+                answer: "Any one from:\n• Allows changing the filename (1) to preserve the original file as a backup/version control (1)\n• Allows changing the save destination/folder (1)\n• Allows changing the file format (e.g., saving .docx as .pdf) (1)."
+            },
+            {
+                id: 403,
+                year: "2021",
+                category: "Word Processing",
+                question: "Spelling and grammar tools have been used to check text. Explain one reason why proofreading is still required.",
+                marks: 2,
+                code: null,
+                answer: "Any one from:\n• Spell checkers do not identify homonyms used in the wrong context (e.g., 'there' vs 'their') (1)\n• Proper names or technical terms may be flagged as errors incorrectly (1)\n• Language/dictionary settings might differ (e.g., US vs UK English) (1)."
+            },
+            {
+                id: 404,
+                year: "2024",
+                category: "Word Processing",
+                question: "Give one reason why text wrap is used when placing images inside a document.",
+                marks: 1,
+                code: null,
+                answer: "Any one from:\n• To present text and images neatly\n• Allows an image to sit alongside relevant paragraph text without disrupting line spacing"
+            },
+            {
+                id: 405,
+                year: "2024",
+                category: "Word Processing",
+                question: "Explain one reason why information is added to a header or footer in a word processed document.",
+                marks: 2,
+                code: null,
+                answer: "To display consistent document details like page numbers or titles on every page (1) separating them from body text for easier navigation (1)."
+            },
+            {
+                id: 406,
+                year: "2025",
+                category: "Word Processing",
+                question: "Explain one reason why information is presented in a table rather than a paragraph.",
+                marks: 2,
+                code: null,
+                answer: "Data is structured and organized clearly (1) making key information quicker to scan and compare (1)."
+            },
+
+            // --- Web Authoring ---
+            {
+                id: 501,
+                year: "2019",
+                category: "Web Authoring",
+                question: "State and justify one improvement you would make to a newly designed web page.",
+                marks: 2,
+                code: null,
+                answer: "Example:\n• Add social media links (1) so users can access extra related content (1)\nOR\n• Add alt text / adjust color contrast (1) to improve accessibility for visually impaired users (1)."
+            },
+            {
+                id: 502,
+                year: "2021",
+                category: "Web Authoring",
+                question: "State one reason why the code snippet below will not display the image correctly.",
+                marks: 1,
+                code: '<img src=slalom.jpg alt="Image of skier">',
+                answer: 'Missing double quotation marks around the image source file path.\n\nCorrect code:\n<img src="slalom.jpg" alt="Image of skier">'
+            },
+            {
+                id: 503,
+                year: "2021",
+                category: "Web Authoring",
+                question: "Explain one reason why 'alt' text is used on web images.",
+                marks: 2,
+                code: null,
+                answer: "Any one from:\n• If the image fails to load due to low bandwidth (1), descriptive text appears so users know what was shown (1)\n• Screen readers read the alt text aloud (1) aiding visually impaired users (1)."
+            },
+            {
+                id: 504,
+                year: "2023",
+                category: "Web Authoring",
+                question: "Explain one benefit of using a CSS template or master layout when creating a multi-page website.",
+                marks: 2,
+                code: null,
+                answer: "• Saves development time (1) because styling rules are defined once and applied to all pages (1)\n• Ensures consistent house style and layout across the entire site (1)."
+            },
+
+            // --- Graphics ---
+            {
+                id: 601,
+                year: "2018",
+                category: "Graphics",
+                question: "Explain one benefit of cropping an image before placing it on a banner or webpage.",
+                marks: 2,
+                code: null,
+                answer: "• Removes unwanted outer areas (1) to focus attention on the main subject (1)\nOR\n• Reduces image dimensions and file size (1) allowing faster web page loading (1)."
+            },
+            {
+                id: 602,
+                year: "2019",
+                category: "Graphics",
+                question: "Explain one drawback of using a bitmap image for a company logo design.",
+                marks: 2,
+                code: null,
+                answer: "Bitmap images become pixelated and lose quality (1) when scaled up to larger dimensions (1)."
+            },
+            {
+                id: 603,
+                year: "2019",
+                category: "Graphics",
+                question: "Give two advantages of vector graphics compared to bitmap graphics.",
+                marks: 2,
+                code: null,
+                answer: "1) Vector images can be enlarged without loss of resolution or pixelation.\n2) Vector files generally have smaller file sizes as they are stored as mathematical shapes/coordinates."
+            },
+            {
+                id: 604,
+                year: "2025",
+                category: "Graphics",
+                question: "Give one reason why you would group multiple vector shapes together when creating graphics.",
+                marks: 1,
+                code: null,
+                answer: "Any one from:\n• Allows all individual components to be moved, rotated, or resized as a single object\n• Maintains exact relative alignment between graphic elements"
+            },
+
+            // --- Database ---
+            {
+                id: 701,
+                year: "Database",
+                category: "Database",
+                question: "State what is meant by a 'Primary Key' in a relational database table.",
+                marks: 1,
+                code: null,
+                answer: "A unique identifier for each record in a database table (e.g., CustomerID)."
+            },
+            {
+                id: 702,
+                year: "Database",
+                category: "Database",
+                question: "Explain one reason why validation checks are applied to database input fields.",
+                marks: 2,
+                code: null,
+                answer: "Validation rules ensure that entered data is sensible, reasonable, and formatted correctly (1), which reduces data entry errors (1)."
+            },
+            {
+                id: 703,
+                year: "Database",
+                category: "Database",
+                question: "Describe the difference between Data and Information in database processing.",
+                marks: 2,
+                code: null,
+                answer: "Data consists of raw, unorganized facts, numbers, or symbols (1), whereas Information is data that has been processed, structured, and given context to make it meaningful (1)."
+            },
+
+            // --- Powerpoint ---
+            {
+                id: 801,
+                year: "Powerpoint",
+                category: "Powerpoint",
+                question: "Explain one advantage of using a Slide Master when creating a presentation deck.",
+                marks: 2,
+                code: null,
+                answer: "It allows changes to logos, fonts, footers, and backgrounds to be made in one place (1), automatically updating all slides to maintain visual consistency (1)."
+            },
+            {
+                id: 802,
+                year: "Powerpoint",
+                category: "Powerpoint",
+                question: "State one reason why custom slide transitions should be used sparingly in a professional presentation.",
+                marks: 1,
+                code: null,
+                answer: "Excessive or flashy transitions can distract the audience from the actual message/content of the presentation."
+            }
+        ];
+
+        // App State
+        let currentPool = [];
+        let historyStack = [];
+        let currentIndex = -1;
+        let isAnswerVisible = false;
+
+        window.onload = function() {
+            initCategory("ALL");
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    toggleAnswer();
+                } else if (e.code === 'ArrowRight') {
+                    randomNextQuestion();
+                } else if (e.code === 'ArrowLeft') {
+                    prevQuestion();
+                }
+            });
+        };
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                html.classList.add('dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        function changeCategory(cat) {
+            initCategory(cat);
+        }
+
+        function restartQuiz() {
+            const currentCat = document.getElementById('categorySelect').value;
+            initCategory(currentCat);
+        }
+
+        function initCategory(category) {
+            if (category === "ALL") {
+                currentPool = [...questionsDataset];
+            } else {
+                currentPool = questionsDataset.filter(q => q.category === category);
+            }
+
+            shuffleArray(currentPool);
+            historyStack = [];
+            currentIndex = -1;
+
+            if (currentPool.length > 0) {
+                randomNextQuestion();
+            } else {
+                showEmptyState();
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function randomNextQuestion() {
+            if (currentPool.length === 0) return;
+
+            // Navigate forwards in history if available
+            if (currentIndex < historyStack.length - 1) {
+                currentIndex++;
+                displayQuestion(historyStack[currentIndex]);
+                return;
+            }
+
+            // Unvisited items in pool
+            const unvisited = currentPool.filter(q => !historyStack.includes(q));
+
+            let nextQ;
+            if (unvisited.length > 0) {
+                const randIndex = Math.floor(Math.random() * unvisited.length);
+                nextQ = unvisited[randIndex];
+            } else {
+                // All questions visited in this pool; cycle without immediate duplicate
+                const lastQ = historyStack[historyStack.length - 1];
+                let rePool = currentPool.filter(q => q.id !== lastQ.id);
+                if (rePool.length === 0) rePool = currentPool;
+                const randIndex = Math.floor(Math.random() * rePool.length);
+                nextQ = rePool[randIndex];
+            }
+
+            historyStack.push(nextQ);
+            currentIndex++;
+            displayQuestion(nextQ);
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayQuestion(historyStack[currentIndex]);
+            }
+        }
+
+        function displayQuestion(q) {
+            isAnswerVisible = false;
+            updateAnswerUI();
+
+            document.getElementById('yearBadge').innerText = q.year;
+            document.getElementById('categoryBadge').innerText = q.category;
+            document.getElementById('marksBadge').innerText = `[ ${q.marks} Mark${q.marks > 1 ? 's' : ''} ]`;
+            document.getElementById('questionText').innerText = q.question;
+            document.getElementById('answerText').innerText = q.answer;
+
+            // Handle Code Snippets
+            const codeBox = document.getElementById('codeSnippetBox');
+            if (q.code) {
+                document.getElementById('codeSnippet').innerText = q.code;
+                codeBox.classList.remove('hidden');
+            } else {
+                codeBox.classList.add('hidden');
+            }
+
+            // Update Progress (Displays question step count without total question length)
+            const currentStep = currentIndex + 1;
+            document.getElementById('questionStepCounter').innerText = `Question ${currentStep}`;
+            
+            // Dynamic bar animation based on completed steps
+            const barPercentage = Math.min(100, (currentStep * 12) % 100 || 100);
+            document.getElementById('progressBar').style.width = `${barPercentage}%`;
+
+            document.getElementById('prevBtn').disabled = (currentIndex <= 0);
+        }
+
+        function toggleAnswer() {
+            isAnswerVisible = !isAnswerVisible;
+            updateAnswerUI();
+        }
+
+        function updateAnswerUI() {
+            const answerSection = document.getElementById('answerSection');
+            const btnText = document.getElementById('answerBtnText');
+            const icon = document.getElementById('answerIcon');
+
+            if (isAnswerVisible) {
+                answerSection.classList.remove('hidden');
+                btnText.innerText = "Hide Answer";
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                answerSection.classList.add('hidden');
+                btnText.innerText = "Show Answer";
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function showEmptyState() {
+            document.getElementById('questionText').innerText = "No questions available in this category.";
+            document.getElementById('answerText').innerText = "";
+            document.getElementById('codeSnippetBox').classList.add('hidden');
+            document.getElementById('questionStepCounter').innerText = "Question 0";
+            document.getElementById('progressBar').style.width = "0%";
+        }
+    </script>
+</body>
+</html>
